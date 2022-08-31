@@ -1,8 +1,9 @@
-from django.urls import include, path
+from django.urls import include, path, re_path
+
 
 app_name = 'users'
 
 urlpatterns = [
-    path('', include('djoser.urls')),
-    path('auth/', include('djoser.urls.authtoken')),
+    path("", include('djoser.urls')),
+    re_path(r'^auth/', include('djoser.urls.authtoken')),
 ]

@@ -14,23 +14,23 @@ SECRET_KEY = '&r-+k65)-z9v5)of7!yn#^4nt6iao^%hk(1evtkh6i07e4a1eh'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
 
 
 # Application definition
 
 INSTALLED_APPS = [
+    'users.apps.UsersConfig',
+    'recipes.apps.RecipesConfig',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'users.apps.UsersConfig',
-    'recipes.apps.RecipesConfig',
     'rest_framework',
+    'rest_framework.authtoken',
     'djoser',
-    'rest_framework.authtoken'
 ]
 
 MIDDLEWARE = [
@@ -114,23 +114,31 @@ AUTH_USER_MODEL = 'users.User'
 STATIC_URL = '/static/'
 
 REST_FRAMEWORK = {
+    # Use Django's standard `django.contrib.auth` permissions,
+    # or allow read-only access for unauthenticated users.
     'DEFAULT_PERMISSION_CLASSES': [
-        'rest_framework.permissions.IsAuthenticatedOrReadOnly',
+        'rest_framework.permissions.AllowAny'
     ],
+
+    "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",
+    "PAGE_SIZE": 6,
+
     'DEFAULT_AUTHENTICATION_CLASSES': [
+        # 'rest_framework_simplejwt.authentication.JWTAuthentication',
         'rest_framework.authentication.TokenAuthentication',
-    ],
+    ]
 }
 
 DJOSER = {
-    'HIDE_USERS': False,
+    'SEND_ACTIVATION_EMAIL': False,
+    "HIDE_USERS": False,
+    'LOGIN_FIELD': 'email',
     'PERMISSIONS': {
         'user_list': ['rest_framework.permissions.AllowAny'],
-        'user': ['rest_framework.permissions.IsAuthenticated'],
-    },
-    'SERIALIZERS': {
-        'user_create': 'users.serializers.UserSerializer',
-        'user': 'users.serializers.UserSerializer',
-        'user_list': 'users.serializers.UserSerializer'
-    }
+        },
+    "SERIALIZERS": {
+        "user_create": 'users.serializers.RegistrationSerializer',
+        "user": 'users.serializers.RegistrationSerializer',
+        'current_user': 'users.serializers.RegistrationSerializer',
+        },
 }

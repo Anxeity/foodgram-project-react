@@ -16,6 +16,8 @@ class User(AbstractUser):
     )
     first_name = models.CharField(verbose_name='имя', max_length=150)
     last_name = models.CharField(verbose_name='фамилия', max_length=150)
+    REQUIRED_FIELDS = ['username', 'first_name', 'last_name','password']
+    USERNAME_FIELD = 'email'
 
 
 class Follow(models.Model):
