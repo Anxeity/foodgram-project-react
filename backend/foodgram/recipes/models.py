@@ -106,7 +106,7 @@ class Favorite(models.Model):
     def __str__(self):
         return f'{self.user} -> {self.recipe}'
 
-class ShoppingList(models.Model):
+class ShoppingCart(models.Model):
     user = models.ForeignKey(
         User,
         on_delete=models.CASCADE,

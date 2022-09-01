@@ -19,6 +19,9 @@ class User(AbstractUser):
     REQUIRED_FIELDS = ['username', 'first_name', 'last_name','password']
     USERNAME_FIELD = 'email'
 
+    def __str__(self):
+        return self.username
+
 
 class Follow(models.Model):
     user = models.ForeignKey(
