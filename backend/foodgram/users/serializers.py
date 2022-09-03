@@ -10,52 +10,51 @@ from djoser.serializers import UserSerializer
 from .models import User, Follow
 
 
-class UserCreateSerializer(serializers.ModelSerializer):
-    """для новых пользователей"""
+class UserSerializer(serializers.ModelSerializer):
+    is_subscribed = serializers.SerializerMethodField()
+
+    def get_is_subscribed(self, obj):
+        if (
+            'request' not in self.context or
+            self.context['request'].user.is_anonymous
+        ):
+            return False
+        return Follow.objects.filter(
+            author=obj, user=self.context['request'].user
+        ).exists()
+
+    def create(self, validated_data):
+        password = validated_data.pop('password')
+        user = User(**validated_data)
+        user.set_password(password)
+        user.save()
+        return user
+
     class Meta:
         model = User
         fields = (
             'email',
+            'id',
             'username',
             'first_name',
             'last_name',
-            'id'
+            'password',
+            'is_subscribed'
         )
-
-
-class UserSerializer(serializers.ModelSerializer):
-    """для существующих пользователей"""
-
-    is_subscribed = serializers.SerializerMethodField()
-
-    class Meta:
-        model = User
-        fields = (
-            "email",
-            "id",
-            "username",
-            "first_name",
-            "last_name",
-            "is_subscribed",
-        )
-
-    def get_is_subscribed(self, obj):
-        """прибавляем поле подписки пользователя на автора."""
-        request = self.context.get("request")
-        if request.user.is_anonymous:
-            return False
-        user = request.user
-        following = obj.follower.filter(user=obj, following=user)
-        return following.exists()
-
 
 class FollowListSerializer(serializers.ModelSerializer):
-    """для списка избранных авторов"""
     is_subscribed = serializers.SerializerMethodField()
     recipes = serializers.SerializerMethodField()
     recipes_count = serializers.IntegerField(
-        source="recipes.count", read_only=True
+        source='recipes.count', read_only=True
     )
+
+    def get_is_subscribed(self, obj):
+        if self.context['request'].user.is_anonymous:
+            return False
+        return Follow.objects.filter(
+            author=obj, user=self.context['request'].user
+        ).exists()
 
     class Meta:
         model = User
@@ -71,34 +70,18 @@ class FollowListSerializer(serializers.ModelSerializer):
         )
         read_only_fields = fields
 
-    def get_is_subscribed(self, obj):
-        request = self.context.get("request")
-        if request.user.is_anonymous:
-            return False
-        user = request.user
-        following = obj.follower.filter(user=obj, following=user)
-        return following.exists()
-
-
 
 class FollowCreateSerializer(serializers.ModelSerializer):
-    """для подписки на пользователя"""
-    user = serializers.PrimaryKeyRelatedField(queryset=User.objects.all())
-    following = serializers.PrimaryKeyRelatedField(queryset=User.objects.all())
+    user = serializers.SlugRelatedField(
+        slug_field='id',
+        queryset=User.objects.all(),
+        default=CurrentUserDefault(),
+        ),
+    author = serializers.SlugRelatedField(
+        slug_field='id',
+        queryset=User.objects.all())
 
     class Meta:
         model = Follow
-        fields = ("user", "following",)
-        validators = [
-            UniqueTogetherValidator(
-                queryset=Follow.objects.all(),
-                fields=("user", "following"),
-                message="Подписка уже оформлена.",
-            )
-        ]
-
-    def validate_self_following(self, value):
-        user = self.context.get("request").user
-        if user == value:
-            raise serializers.ValidationError("Нельзя подписаться на себя.")
-        return value
+        fields = ('user', 'author')
+        

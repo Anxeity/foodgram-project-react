@@ -16,12 +16,16 @@ class User(AbstractUser):
     )
     first_name = models.CharField(verbose_name='имя', max_length=150)
     last_name = models.CharField(verbose_name='фамилия', max_length=150)
+    is_superuser = models.BooleanField(default=False)
+    is_active = models.BooleanField(default=True)
     REQUIRED_FIELDS = ['username', 'first_name', 'last_name','password']
     USERNAME_FIELD = 'email'
 
-    def __str__(self):
-        return self.username
-
+    class Meta:
+        ordering = ('username',)
+        verbose_name = 'Пользователь'
+        verbose_name_plural = 'Пользователи'
+        
 
 class Follow(models.Model):
     user = models.ForeignKey(
@@ -36,3 +40,8 @@ class Follow(models.Model):
         related_name='following',
         verbose_name='Автор'
     )
+
+    class Meta:
+        verbose_name = 'Подписка'
+        verbose_name_plural = 'Подписки'
+        
