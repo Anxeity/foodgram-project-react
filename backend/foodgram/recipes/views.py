@@ -37,9 +37,6 @@ class RecipeViewSet(viewsets.ModelViewSet):
     permission_classes = (IsAuthenticatedOwnerOrReadOnly,)
     filter_backends = (DjangoFilterBackend,)
     filterset_class = RecipeFilter
-
-    def perform_create(self, serializer):
-        serializer.save(author=self.request.user)
     
     def perform_create(self, serializer):
         serializer.save(author=self.request.user)
