@@ -8,7 +8,7 @@ from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 
 from .filters import IngredientFilter, RecipeFilter, Recipe
-from .models import Ingredient, Tag, Favorite, ShoppingCart, IngredientRecipe
+from .models import Ingredient,Recipe, Tag, Favorite, ShoppingCart, IngredientRecipe
 from .permissions import IsAuthenticatedOwnerOrReadOnly
 from .serializers import (
     IngredientSerializer, TagSerializer, RecipeSerializer,
@@ -40,8 +40,55 @@ class RecipeViewSet(viewsets.ModelViewSet):
     filter_backends = (DjangoFilterBackend,)
     filterset_class = RecipeFilter
 
-    def perform_create(self, serializer):
-        serializer.save(author=self.request.user)
+    """def perform_create(self, serializer):
+        serializer.save(author=self.request.user)"""
+
+    def create(self, request, *args, **kwargs):
+        serializer = RecipeSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        ingredients = serializer.validated_data.pop('ingredients')
+        tags = serializer.validated_data.pop('tags')
+        recipe = Recipe.objects.create(author=self.request.user, **serializer.validated_data)
+        recipe.tags.set(tags)
+        ingredients_list = [
+            IngredientRecipe(
+                recipe=recipe,
+                ingredient=ingredient.get('id'),
+                amount=ingredient.get('amount')
+            )
+            for ingredient in ingredients
+        ]
+        IngredientRecipe.objects.bulk_create(ingredients_list)
+        serializer = RecipeSerializer(instance=recipe, context={'request': request})
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+    def update(self, request, pk=None, *args, **kwargs):
+        instance = get_object_or_404(Recipe, pk=pk)
+        instance.tags.clear()
+        IngredientRecipe.objects.filter(recipe=instance).delete()
+        serializer = RecipeSerializer(instance, data=request.data,
+                                          partial=True)
+        serializer.is_valid(raise_exception=True)
+        ingredients = serializer.validated_data.pop('ingredients')
+        tags = serializer.validated_data.pop('tags')
+        """###instance = super().update(instance, serializer.validated_data)"""
+        if tags:
+            instance.tags.set(tags)
+        if ingredients:
+            instance.ingredients.clear()
+            ingredients_list = [
+                IngredientRecipe(
+                    recipe=instance,
+                    ingredient=ingredient.get('id'),
+                    amount=ingredient.get('amount')
+                )
+                for ingredient in ingredients
+            ]
+            IngredientRecipe.objects.bulk_create(ingredients_list)
+            serializer.save()
+            serializer = RecipeSerializer(instance=instance, context={'request': request})
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
 
     @staticmethod
     def __favorite_shopping(request, pk, model, errors):
@@ -104,6 +151,10 @@ class RecipeViewSet(viewsets.ModelViewSet):
         )
         data_dict = {}
         ingredients_list = []
+        if not item in ingredients_obj:
+            ingredients_list.append(
+                f'{"Данный рецепт не содержит ингредиентов"}'
+            )
         for item in ingredients_obj:
             name = item['ingredient__name'].capitalize()
             unit = item['ingredient__measurement_unit']

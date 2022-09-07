@@ -33,7 +33,7 @@ class AuthorSerializer(serializers.ModelSerializer):
         if request.user.is_anonymous:
             return False
         return Follow.objects.filter(
-            user=request.user, author=obj.pk).exists()
+            user = request.user, author=obj.pk).exists()
 
     class Meta:
         model = User
@@ -126,14 +126,10 @@ class RecipeSerializer(serializers.ModelSerializer):
         )
         return serializer.data
 
-    @transaction.atomic
+    """@transaction.atomic
     def create(self, validated_data):
         ingredients = validated_data.pop('ingredients', None)
         tags = validated_data.pop('tags', None)
-        if not ingredients:
-            raise serializers.ValidationError('нужен хотя бы один ингредиент')
-        elif not tags:
-            raise serializers.ValidationError('нужен хотя бы один тег')
         recipe = Recipe.objects.create(**validated_data)
         recipe.tags.set(tags)
         ingredients_list = [
@@ -145,9 +141,9 @@ class RecipeSerializer(serializers.ModelSerializer):
             for ingredient in ingredients
         ]
         IngredientRecipe.objects.bulk_create(ingredients_list)
-        return recipe
+        return recipe"""
 
-    @transaction.atomic
+    """@transaction.atomic
     def update(self, instance, validated_data):
         ingredients = validated_data.pop('ingredients', None)
         tags = validated_data.pop('tags', None)
@@ -165,19 +161,29 @@ class RecipeSerializer(serializers.ModelSerializer):
                 for ingredient in ingredients
             ]
             IngredientRecipe.objects.bulk_create(ingredients_list)
-        return instance
+        return instance"""
 
     def validate(self, data):
-        ingredient_data = self.initial_data.get('ingredients')
-        if ingredient_data:
+        ingredients = self.initial_data.get('ingredients')
+        if ingredients:
             checked_ingredients = set()
-            for ingredient in ingredient_data:
+            for ingredient in ingredients:
                 ingredient_obj = get_object_or_404(
                     Ingredient, id=ingredient['id']
                 )
                 if ingredient_obj in checked_ingredients:
                     raise serializers.ValidationError('дубликат ингредиента')
                 checked_ingredients.add(ingredient_obj)
+        if not ingredients:
+            raise serializers.ValidationError('нужен хотя бы один ингредиент')
+        tags = self.initial_data.get('tags')
+        if not tags:
+            raise serializers.ValidationError('нужен хотя бы один тег')
+        cooking_time = self.initial_data.get('cooking_time')
+        if int(cooking_time) <= 0:
+            raise serializers.ValidationError({
+                'cooking_time': 'Время не может быть меньше 1 минуты!'
+            })
         return data
 
     class Meta:
