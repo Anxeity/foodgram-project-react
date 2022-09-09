@@ -126,43 +126,6 @@ class RecipeSerializer(serializers.ModelSerializer):
         )
         return serializer.data
 
-    """@transaction.atomic
-    def create(self, validated_data):
-        ingredients = validated_data.pop('ingredients', None)
-        tags = validated_data.pop('tags', None)
-        recipe = Recipe.objects.create(**validated_data)
-        recipe.tags.set(tags)
-        ingredients_list = [
-            IngredientRecipe(
-                recipe=recipe,
-                ingredient=ingredient.get('id'),
-                amount=ingredient.get('amount')
-            )
-            for ingredient in ingredients
-        ]
-        IngredientRecipe.objects.bulk_create(ingredients_list)
-        return recipe"""
-
-    """@transaction.atomic
-    def update(self, instance, validated_data):
-        ingredients = validated_data.pop('ingredients', None)
-        tags = validated_data.pop('tags', None)
-        instance = super().update(instance, validated_data)
-        if tags:
-            instance.tags.set(tags)
-        if ingredients:
-            instance.ingredients.clear()
-            ingredients_list = [
-                IngredientRecipe(
-                    recipe=instance,
-                    ingredient=ingredient.get('id'),
-                    amount=ingredient.get('amount')
-                )
-                for ingredient in ingredients
-            ]
-            IngredientRecipe.objects.bulk_create(ingredients_list)
-        return instance"""
-
     def validate(self, data):
         ingredients = self.initial_data.get('ingredients')
         if ingredients:

@@ -40,8 +40,6 @@ class RecipeViewSet(viewsets.ModelViewSet):
     filter_backends = (DjangoFilterBackend,)
     filterset_class = RecipeFilter
 
-    """def perform_create(self, serializer):
-        serializer.save(author=self.request.user)"""
 
     def create(self, request, *args, **kwargs):
         serializer = RecipeSerializer(data=request.data)

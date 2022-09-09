@@ -1,11 +1,16 @@
 from django.shortcuts import get_object_or_404
 from rest_framework import permissions, status, generics
-from rest_framework import viewsets
+from rest_framework import viewsets, mixins
+from djoser.views import UserViewSet
 from rest_framework.decorators import action
 from rest_framework.response import Response
+from djoser.serializers import PasswordSerializer
+from django.contrib.auth.hashers import make_password
+from rest_framework.viewsets import ModelViewSet
+from djoser.serializers import UserCreateSerializer, UserSerializer
 
 from .models import User, Follow
-from .serializers import FollowListSerializer, FollowCreateSerializer
+from .serializers import FollowListSerializer, FollowCreateSerializer, UserSerializer
 
 
 class SubscriptionsView(generics.ListAPIView):

@@ -16,11 +16,11 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 # SECURITY WARNING: keep the secret key used in production secret!
 ##SECRET_KEY = '&r-+k65)-z9v5)of7!yn#^4nt6iao^%hk(1evtkh6i07e4a1eh'
-SECRET_KEY = os.getenv('SECRET_KEY')
+SECRET_KEY = os.getenv('SECRET_KEY', '&r-+k65)-z9v5)of7!yn#^4nt6iao^%hk(1evtkh6i07e4a1eh')
 
 # SECURITY WARNING: don't run with debug turned on in production!
 ###DEBUG = True
-DEBUG = os.getenv('DEBUG')
+DEBUG = os.getenv('DEBUG', True)
 
 ALLOWED_HOSTS = ['*']
 
@@ -155,7 +155,7 @@ DJOSER = {
         'user': ['rest_framework.permissions.IsAuthenticated'],
         },
     "SERIALIZERS": {
-        "user_create": 'users.serializers.UserSerializer',
+        "user_create": 'users.serializers.UserCreateSerializer',
         "user": 'users.serializers.UserSerializer',
         'current_user': 'users.serializers.UserSerializer',
         'user_list': 'users.serializers.UserSerializer'
