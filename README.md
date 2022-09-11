@@ -14,7 +14,10 @@
 
 ### Доступ к проекту:
 ```
-проект доступен по адресу: www.umangala.sytes.net
+***
+
+Сайт доступен по ссылке http://umangala.sytes.net/
+
 ```
 Тестовый пользователь:
 login: dima@yandex.ru
