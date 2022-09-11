@@ -10,7 +10,7 @@ services:
       - ./.env
 
   backend:
-    image: anxeity/foodgram-backend:v12
+    image: anxeity/foodgram-backend:v22
     restart: always
     volumes:
       - static_value:/app/static/
@@ -21,7 +21,7 @@ services:
       - ./.env
 
   frontend:
-    image: anxeity/foodgram-frontend:v12
+    image: anxeity/foodgram-frontend:v22
     volumes:
       - ../frontend/:/app/result_build/
     depends_on:

@@ -127,26 +127,16 @@ class RecipeSerializer(serializers.ModelSerializer):
         return serializer.data
 
     def validate(self, data):
-        ingredients = self.initial_data.get('ingredients')
-        if ingredients:
+        ingredient_data = self.initial_data.get('ingredients')
+        if ingredient_data:
             checked_ingredients = set()
-            for ingredient in ingredients:
+            for ingredient in ingredient_data:
                 ingredient_obj = get_object_or_404(
                     Ingredient, id=ingredient['id']
                 )
                 if ingredient_obj in checked_ingredients:
                     raise serializers.ValidationError('дубликат ингредиента')
                 checked_ingredients.add(ingredient_obj)
-        if not ingredients:
-            raise serializers.ValidationError('нужен хотя бы один ингредиент')
-        tags = self.initial_data.get('tags')
-        if not tags:
-            raise serializers.ValidationError('нужен хотя бы один тег')
-        cooking_time = self.initial_data.get('cooking_time')
-        if int(cooking_time) <= 0:
-            raise serializers.ValidationError({
-                'cooking_time': 'Время не может быть меньше 1 минуты!'
-            })
         return data
 
     class Meta:
